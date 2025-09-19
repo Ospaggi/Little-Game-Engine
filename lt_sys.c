@@ -18,11 +18,11 @@
  
  
 //debugging
-float t1 = 0;
-float t2 = 0;
+//float t1 = 0;
+//float t2 = 0;
 
 //timer     		
-long time_ctr;
+//long time_ctr;
 
 // this points to the 18.2hz system clock for debug in dosbox (does not work on PCEM). 
 word *my_clock=(word *)0x0000046C; 
@@ -200,15 +200,31 @@ void LT_Exit(){
 }
 
 void LT_memset(void *ptr, byte val, word number){
-	void *data = ptr;
-	asm push es
-	asm push di
-	asm mov cx,number
-	asm les di,data
-	asm mov al,val
-	asm rep stosb	//ax to es:di
-	asm pop di
-	asm pop es
+    void *data = ptr;
+    asm push es
+    asm push di
+
+    asm les di,data        ; //ES:DI = destination pointer
+    asm mov cx,number      ; //CX = number of bytes to set
+    asm mov al,val         ; //AL = fill value (byte)
+
+    ; //Build word pattern [val|val]
+    asm mov ah,al          ; //AH = AL
+    asm mov bx,ax          ; //BX = word pattern with repeated byte
+
+    ; //Fill memory with words
+    asm shr cx,1           ; //CX = CX/2 (number of words)
+    asm rep stosw          ; //Fill memory with BX (word)
+
+    ; //If odd number of bytes, one byte remains
+    asm test number,1
+    asm jz _done
+    asm mov al,val
+    asm stosb              ; //Fill last remaining byte
+
+_done:
+    asm pop di
+    asm pop es
 }
 
 void LT_Error(char *error, char *file);
@@ -429,31 +445,33 @@ void LT_fclose(word file_handle){
 	asm int 21h
 }
 
-byte LT_stricmp(char *st1, char *st2){
-	byte i = 0;
-	while(1){
-		byte a = st1[i];byte b = st2[i];
-		if (i && !a && !b) return 0;
-		//to lower case if required
-		if ((a>64)&&(a<91)) a+=32;
-		if ((b>64)&&(b<91)) b+=32;
-		//compare
-		if (a != b) return 1;
-		if (i == 15) return 0;
-		i++;
-	}
-	//return 1;
+byte LT_stricmp(char *st1, char *st2) {
+    byte i = 0;
+    while (1) {
+        byte a = st1[i];
+        byte b = st2[i];
+
+        // Convert uppercase to lowercase if needed
+        if ((a >= 'A') && (a <= 'Z')) a += 32;
+        if ((b >= 'A') && (b <= 'Z')) b += 32;
+
+        // If different, return mismatch
+        if (a != b) return 1;
+
+        // If both reached NULL, strings are equal
+        if (!a && !b) return 0;
+
+        i++;
+    }
 }
 
-byte LT_strlen(char *st1){
-	byte i = 0;
-	while(1){
-		byte a = st1[i];
-		if(!a) return i;
-		i++;
-	}
+byte LT_strlen(char *st1) {
+    byte len = 0;
+    while (st1[len]) {   // stop when st1[len] == 0
+        len++;
+    }
+    return len;
 }
-
 
 void interrupt (far * LT_getvect(byte intr))(){
 	word _segment = 0;
