@@ -720,7 +720,7 @@ void interrupt LT_Loading(void){
 		if (LT_VIDEO_MODE == 3) {
 			int i;
 			word offset = s->frame<<9;
-			word offset1 = (160*26)+72;
+			word offset1 = 4232; //(160*26)+72
 			tga_page = 0;
 			LT_TGA_MapPage(0);
 			for(i = 0; i < 8;i++){
@@ -734,7 +734,7 @@ void interrupt LT_Loading(void){
 		if (LT_VIDEO_MODE == 2) {
 			int i;
 			word offset = s->frame<<8;
-			word offset1 = (80*52)+36;
+			word offset1 = 4196; //(80*52)+36
 			for(i = 0; i < 16;i++){
 				_memcpy(&CGA[offset1],&LT_sprite_data[offset],8);offset1+=8192;	offset+=8;
 				_memcpy(&CGA[offset1],&LT_sprite_data[offset],8);offset1-=8192-80;	offset1&=8191; offset+=8;
@@ -839,7 +839,7 @@ void LT_End_Loading(){
 		int i;
 		if (LT_VIDEO_MODE<2){
 			LT_VGA_Enable_4Planes();
-			for (i = 0; i < LT_VRAM_Logical_Width*200;i++) VGA[i] = VGA[i + (304*LT_VRAM_Logical_Width)];
+			for (i = 0; i < (LT_VRAM_Logical_Width<<3)*25;i++) VGA[i] = VGA[i + (19*(LT_VRAM_Logical_Width<<4))];
 			LT_Loaded_Image = 0;
 		}
 		if (LT_VIDEO_MODE == 3){
@@ -1286,7 +1286,7 @@ void LT_Load_Font(char *file, char *dat_string, int c0, int c1, int c2, int c3){
 	//COPY TO VRAM
 	w = 16;
 	h = 4;
-	jx = 128+8;
+	jx = 136; //128+8
 	if (LT_VIDEO_MODE == 0){
 		asm mov dx, 0x03CE
 		asm mov ax, 0x0205	//write mode 2
@@ -1297,7 +1297,7 @@ void LT_Load_Font(char *file, char *dat_string, int c0, int c1, int c2, int c3){
 			ty = (tileY<<3)-1;
 			for (tileX = 0; tileX < w; tileX++){
 				int i;
-				offset = (ty*128) + (tileX<<3);
+				offset = (ty<<7) + (tileX<<3);
 				for(i = 0; i < 8; i++){
 					byte mask = 0x80;
 					//Get an 8 pixel chunk, and convert to 4 bytes
@@ -1340,7 +1340,7 @@ void LT_Load_Font(char *file, char *dat_string, int c0, int c1, int c2, int c3){
 			for (tileY = h; tileY > 0 ; tileY--){
 				ty = (tileY<<3)-1;
 				for (tileX = 0; tileX < w; tileX++){
-					offset = plane + (ty*128) + (tileX<<3);
+					offset = plane + (ty<<7) + (tileX<<3);
 					//LOAD TILE
 					x=0;
 					for(y = 0; y < 16; y++){
@@ -1364,7 +1364,7 @@ void LT_Load_Font(char *file, char *dat_string, int c0, int c1, int c2, int c3){
 			asm CLI //disable interrupts so that loading animation does not interfere
 			ty = (tileY<<3)-1;
 			for (tileX = 0; tileX < w; tileX++){
-				offset = (ty*128) + (tileX<<3);
+				offset = (ty<<7) + (tileX<<3);
 				//LOAD TILE
 				for(y = 0; y < 8; y++){
 					int j;
@@ -1387,7 +1387,7 @@ void LT_Load_Font(char *file, char *dat_string, int c0, int c1, int c2, int c3){
 			asm CLI //disable interrupts so that loading animation does not interfere
 			ty = (tileY<<3)-1;
 			for (tileX = 0; tileX < w; tileX++){
-				offset = (ty*128) + (tileX<<3);
+				offset = (ty<<7) + (tileX<<3);
 				//LOAD TILE
 				for(y = 0; y < 8; y++){
 					int j;
@@ -1630,12 +1630,12 @@ void LT_Print_TGA(word x, word y, word w, char *string){
 	byte i = 0;
 	word line = 0;
 	word screen_offset;
-	word lwidth = 8192-4;
-	word lwidth2 = (8192*3)+160;
-	word line_jump = (160<<1) -(w<<2);
+	word lwidth = 8188; //8192-4
+	word lwidth2 = 24736; //(8192*3)+160
+	word line_jump = (320) -(w<<2);
 
 	x = ((x<<3)>>2);
-	y = (160<<1)*y;
+	y = 320*y;
 	screen_offset = y+x;
 	//if (size > 40) size = 40;
 	asm{
@@ -1727,10 +1727,10 @@ void LT_Print_CGA(word x, word y, word w, char *string){
 	byte i = 0;
 	word line = 0;
 	word screen_offset;
-	word lwidth = 8192-2;
-	word lwidth2 = (8192*3)+(80*3);
+	word lwidth = 8190; // 8192-2
+	word lwidth2 = 24816; //(8192*3)+(80*3)
 	word line_jump = (320) -(w<<1);
-	y = (160<<1)*y;
+	y = 320*y;
 	screen_offset = y+x;
 	//if (size > 40) size = 40;
 	asm{
@@ -2334,7 +2334,7 @@ void LT_Load_Image(char *file,char* dat_string){
 
 	if (LT_VIDEO_MODE == 0){
 		asm CLI //disable interrupts so that loading animation does not interfere
-		VGA_index = (304*LT_VRAM_Logical_Width)+(LT_VRAM_Logical_Width*(h-1)); //Second page
+		VGA_index = (19*(LT_VRAM_Logical_Width<<4))+(LT_VRAM_Logical_Width*(h-1)); //Second page
 		offset = 0;
 
 		asm mov dx, 0x03CE
@@ -2379,7 +2379,7 @@ void LT_Load_Image(char *file,char* dat_string){
 			asm shl ah,cl
 			asm mov dx,0x03C4
 			asm out dx,ax
-			VGA_index = (304*LT_VRAM_Logical_Width)+(LT_VRAM_Logical_Width*(h-1)); //Second page
+			VGA_index = (19*(LT_VRAM_Logical_Width<<4))+(LT_VRAM_Logical_Width*(h-1)); //Second page
 			//SCAN LINES 
 			offset = plane;
 			for (y = 0; y < 200; y++){
@@ -2396,7 +2396,7 @@ void LT_Load_Image(char *file,char* dat_string){
 	if (LT_VIDEO_MODE == 3){
 		LT_TGA_MapPage(1);
 		i = 0;
-		offset = 199*320;
+		offset = 63680; //199*320
 		for (y = 0; y < 200; y++){
 			for(x = 0; x < 160; x++){
 				CGA[VGA_index++] = (LT_tile_tempdata[offset]<<4)+LT_tile_tempdata[offset+1];
@@ -2404,7 +2404,7 @@ void LT_Load_Image(char *file,char* dat_string){
 			}
 			offset -= 640;
 			i++;
-			if (i < 4) VGA_index += 8192-160;
+			if (i < 4) VGA_index += 8032; // 8192-160
 			else {VGA_index += 8192;VGA_index &= (8192<<2)-1; i = 0;}
 		}
 	}	
@@ -2423,7 +2423,7 @@ void LT_Load_Image(char *file,char* dat_string){
 		asm push ds; asm push di; asm push si;
 		
 		asm les di,[LT_sprite_data]; asm add di,(16*3*1024)-1; //es:di = LT_sprite_data ((16*3*1024)-1)
-		asm lds si,[LT_tile_tempdata]; asm add si,199*320; //ds:si = LT_tile_tempdata[199*320]
+		asm lds si,[LT_tile_tempdata]; asm add si, 63680; //ds:si = LT_tile_tempdata[199*320]
 		asm mov ax,0; asm mov cx,200;
 		//Load bytes and convert to 2 bit CGA colors
 		_Line_Loop:

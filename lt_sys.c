@@ -772,7 +772,7 @@ void LT_Init(){
 		LT_Fade_out();
 		//SET MODE
 		asm mov ax,0x000D;asm int 0x10; //EGA/VGA 320x200x16 
-		LT_memset(VGA,0x00,(320*200)>>3); 
+		LT_memset(VGA,0x00, 8000); //(320*200)/8
 		
 		if (LT_DETECTED_CARD){//if VGA
 			asm cli
@@ -816,10 +816,10 @@ void LT_Init(){
 		LT_Fade_out = &LT_Fade_out_VGA;
 		LT_Draw_Sprites = &LT_Draw_Sprites_EGA_VGA;
 		LT_Draw_Sprites_Fast = &LT_Draw_Sprites_Fast_EGA_VGA;
-		LT_sprite_data_offset = 16<<10;
+		LT_sprite_data_offset = 16384; // 16*1024
 		LT_Fade_out();
 		VGA_ClearPalette();
-		LT_memset(VGA,0x00,(320*200)>>2); 
+		LT_memset(VGA,0x00, 16000); //(320*200)/4
 		
 		//SET MODE X
 		asm mov ax,0x0013;asm int 0x10;
