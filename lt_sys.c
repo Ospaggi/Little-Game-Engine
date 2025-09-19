@@ -200,15 +200,25 @@ void LT_Exit(){
 }
 
 void LT_memset(void *ptr, byte val, word number){
-	void *data = ptr;
-	asm push es
-	asm push di
-	asm mov cx,number
-	asm les di,data
-	asm mov al,val
-	asm rep stosb	//ax to es:di
-	asm pop di
-	asm pop es
+    void *data = ptr;
+    asm push es
+    asm push di
+
+    asm les di,data        ; //ES:DI ← destination pointer
+    asm mov cx,number      ; //CX ← number of bytes
+    asm mov al,val         ; //AL ← fill value
+    asm mov ah,al          ; //duplicate AL into AH, so AX = val | (val << 8)
+
+    asm shr cx,1           ; //CX = number / 2 (word count)
+    asm rep stosw          ; //fill memory with AX, word by word
+
+    asm test number,1      ; //check if there's a remaining odd byte
+    asm jz memset_done
+    asm stosb              ; //write the last byte if needed
+
+	memset_done:
+		asm pop di
+		asm pop es
 }
 
 void LT_Error(char *error, char *file);
@@ -456,7 +466,6 @@ byte LT_strlen(char *st1) {
     }
     return len;
 }
-
 
 void interrupt (far * LT_getvect(byte intr))(){
 	word _segment = 0;
