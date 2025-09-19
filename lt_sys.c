@@ -199,26 +199,30 @@ void LT_Exit(){
 	asm int	0x21
 }
 
-void LT_memset(void *ptr, byte val, word number){
+void LT_memset(void *ptr, byte val, word number) {
     void *data = ptr;
+	//ES:DI ← destination pointer
     asm push es
     asm push di
 
-    asm les di,data        ; //ES:DI ← destination pointer
-    asm mov cx,number      ; //CX ← number of bytes
+    asm les di,data        ; //ES:DI = destination
     asm mov al,val         ; //AL ← fill value
     asm mov ah,al          ; //duplicate AL into AH, so AX = val | (val << 8)
+    asm mov cx,number      ; //CX ← number of bytes
 
-    asm shr cx,1           ; //CX = number / 2 (word count)
+    asm jcxz lt_memset_done ; // if number == 0, skip
+
+    asm mov bx,cx          
+    asm shr cx,1           ; //CX = word count
     asm rep stosw          ; //fill memory with AX, word by word
 
-    asm test number,1      ; //check if there's a remaining odd byte
-    asm jz memset_done
+    asm test bl,1          ; //check if there's a remaining odd byte
+    asm jz lt_memset_done
     asm stosb              ; //write the last byte if needed
 
-	memset_done:
-		asm pop di
-		asm pop es
+lt_memset_done:
+    asm pop di
+    asm pop es
 }
 
 void LT_Error(char *error, char *file);
