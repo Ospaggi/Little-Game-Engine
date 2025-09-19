@@ -622,7 +622,7 @@ void LT_Load_Sprite(char *file, char *dat_string, int sprite_number, byte *anima
 		if (LT_VIDEO_MODE == 1){
 			dword check_size = 0;
 			//Compile and store the compiled frame at LT_tile_tempdata
-			code_size = Compile_Bitmap(LT_VRAM_Logical_Width, &LT_tile_tempdata2[(frame<1)+(frame*(size*size))],LT_tile_tempdata);
+			code_size = Compile_Bitmap(LT_VRAM_Logical_Width, &LT_tile_tempdata2[(frame*2)+(frame*(size*size))],LT_tile_tempdata);
 			//Check code size
 			check_size = LT_sprite_data_offset + code_size;
 			if (check_size > 0x0000FFFF) LT_Error("Not enough RAM to allocate frames $",file);
@@ -718,8 +718,8 @@ void LT_Load_Sprite(char *file, char *dat_string, int sprite_number, byte *anima
 	s->anim_speed = 0;
 	s->speed = 4;
 	s->anim_counter = 0;
-	s->speed_x = 8<<4;
-	s->speed_y = 8<<4;
+	s->speed_x = 8*16;
+	s->speed_y = 8*16;
 	s->s_x = 0;
 	s->s_y = 0;
 	s->id_pos = 0;
@@ -772,7 +772,7 @@ void LT_Clone_Sprite(int sprite_number_c,int sprite_number){
 	c->anim_counter = 0;
 	c->mspeed_x = 1;
 	c->mspeed_y = 1;
-	c->speed_x = 8<<4;
+	c->speed_x = 8*16;
 	c->speed_y = 8*26;
 	c->s_x = 0;
 	c->s_y = 0;
@@ -818,7 +818,7 @@ void LT_Reset_Sprite_Stack(){
 	LT_Sprite_Stack = 0;
 	for (i = 0; i<33; i++) LT_Sprite_Stack_Table[i] = 0;
 	LT_AI_Sprite[0] = 0;
-	LT_memset(sprite_id_table,0,19<<8);
+	LT_memset(sprite_id_table,0,19*256);
 }
 
 void LT_Set_Sprite_Animation(int sprite_number, byte anim){
@@ -2526,11 +2526,11 @@ void LT_move_player(int sprite_number){
 		//UP
 		if (LT_Keys[LT_UP]){ LT_Player_State[SPR_MOVE] = 1; if (s->speed_y>8) s->speed_y-=8;}
 		//DOWN
-		else if (LT_Keys[LT_DOWN]){ LT_Player_State[SPR_MOVE] = 2; if (s->speed_y < (8<<5)) s->speed_y+=8;}
+		else if (LT_Keys[LT_DOWN]){ LT_Player_State[SPR_MOVE] = 2; if (s->speed_y < 8*32) s->speed_y+=8;}
 		//LEFT
 		if (LT_Keys[LT_LEFT]){ LT_Player_State[SPR_MOVE] = 3;s->state = 3; if (s->speed_x>8) s->speed_x-=8;}
 		//RIGHT
-		else if (LT_Keys[LT_RIGHT]){ LT_Player_State[SPR_MOVE] = 4;s->state = 4; if (s->speed_x <(8<<5)) s->speed_x+=8;}
+		else if (LT_Keys[LT_RIGHT]){ LT_Player_State[SPR_MOVE] = 4;s->state = 4; if (s->speed_x <8*32) s->speed_x+=8;}
 		
 		//Tile physics
 		if(LT_Spr_speed_float&1){
