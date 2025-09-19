@@ -18,11 +18,11 @@
  
  
 //debugging
-//float t1 = 0;
-//float t2 = 0;
+float t1 = 0;
+float t2 = 0;
 
 //timer     		
-//long time_ctr;
+long time_ctr;
 
 // this points to the 18.2hz system clock for debug in dosbox (does not work on PCEM). 
 word *my_clock=(word *)0x0000046C; 
@@ -200,31 +200,15 @@ void LT_Exit(){
 }
 
 void LT_memset(void *ptr, byte val, word number){
-    void *data = ptr;
-    asm push es
-    asm push di
-
-    asm les di,data        ; //ES:DI = destination pointer
-    asm mov cx,number      ; //CX = number of bytes to set
-    asm mov al,val         ; //AL = fill value (byte)
-
-    ; //Build word pattern [val|val]
-    asm mov ah,al          ; //AH = AL
-    asm mov bx,ax          ; //BX = word pattern with repeated byte
-
-    ; //Fill memory with words
-    asm shr cx,1           ; //CX = CX/2 (number of words)
-    asm rep stosw          ; //Fill memory with BX (word)
-
-    ; //If odd number of bytes, one byte remains
-    asm test number,1
-    asm jz _done
-    asm mov al,val
-    asm stosb              ; //Fill last remaining byte
-
-_done:
-    asm pop di
-    asm pop es
+	void *data = ptr;
+	asm push es
+	asm push di
+	asm mov cx,number
+	asm les di,data
+	asm mov al,val
+	asm rep stosb	//ax to es:di
+	asm pop di
+	asm pop es
 }
 
 void LT_Error(char *error, char *file);
@@ -472,6 +456,7 @@ byte LT_strlen(char *st1) {
     }
     return len;
 }
+
 
 void interrupt (far * LT_getvect(byte intr))(){
 	word _segment = 0;
