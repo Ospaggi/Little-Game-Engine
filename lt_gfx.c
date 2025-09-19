@@ -134,22 +134,33 @@ extern int LT_SPRITE_PLAYER;
 void /*interrupt*/ PC_Speaker_SFX_Player(void);
 
 word _strlen(char *str){
-	word len = 0;
-	while(1){if (str[len] == 0) break;len++;}
-	return len;
+    char *p = str;
+    while (*p) p++;
+    return (word)(p - str);
 }
 
 void _memcpy(void *dest, void *src, word number){
-	asm push ds;asm push si;asm push es;asm push di;
-	
-	asm lds	si,src
-	asm les	di,dest
-	asm mov cx,number
-	asm rep movsb //ds:si to es:di
-	
-	asm pop di;asm pop es;asm pop si;asm pop ds;
-}
+    asm push ds
+    asm push si
+    asm push es
+    asm push di
 
+    asm lds si,src        ; //DS:SI ← src
+    asm les di,dest       ; //ES:DI ← dest
+    asm mov cx,number     ; //CX ← number of bytes
+    asm shr cx,1          ; //CX = number of words (number / 2)
+    asm rep movsw         ; //copy words (2 bytes at a time)
+    
+    asm test number,1     ; //check if there was an odd byte
+    asm jz _memcpy_done   ; //if even, skip
+    asm movsb             ; //copy last byte
+
+_memcpy_done:
+    asm pop di
+    asm pop es
+    asm pop si
+    asm pop ds
+}
 
 void Check_Graphics_Card(){
 	byte reg = 0;
@@ -1416,7 +1427,7 @@ void LT_Print_VGA(word x, word y, word w, char *string){
 	word line = 0;
 	word lwidth = LT_VRAM_Logical_Width-2;
 	word lwidth2 = LT_VRAM_Logical_Width*7;
-	word line_jump = (LT_VRAM_Logical_Width*8) - (w<<1);
+	word line_jump = (LT_VRAM_Logical_Width << 3) - (w<<1);
 	Set_VESA_Page(1);
 	y = (y<<3);
 	screen_offset = (y<<6)+(y<<4)+(y<<3);	//(y*64)+(y*16)+(y*8) = y*88;
@@ -1523,7 +1534,7 @@ void LT_Print_EGA(word x, word y, word w, char *string){
 	word screen_offset;
 	word lwidth = LT_VRAM_Logical_Width-1;
 	word lwidth2 = LT_VRAM_Logical_Width*7;
-	word line_jump = (LT_VRAM_Logical_Width*8) -w;
+	word line_jump = (LT_VRAM_Logical_Width <<3) -w;
 	//word planes = 0x0F02;
 	//if (LT_EGA_TEXT_TRANSLUCENT) planes = 0x0702;
 	y = (y<<3);
@@ -1621,10 +1632,10 @@ void LT_Print_TGA(word x, word y, word w, char *string){
 	word screen_offset;
 	word lwidth = 8192-4;
 	word lwidth2 = (8192*3)+160;
-	word line_jump = (160*2) -(w<<2);
+	word line_jump = (160<<1) -(w<<2);
 
 	x = ((x<<3)>>2);
-	y = 160*2*y;
+	y = (160<<1)*y;
 	screen_offset = y+x;
 	//if (size > 40) size = 40;
 	asm{
@@ -1719,7 +1730,7 @@ void LT_Print_CGA(word x, word y, word w, char *string){
 	word lwidth = 8192-2;
 	word lwidth2 = (8192*3)+(80*3);
 	word line_jump = (320) -(w<<1);
-	y = 160*2*y;
+	y = (160<<1)*y;
 	screen_offset = y+x;
 	//if (size > 40) size = 40;
 	asm{
@@ -2394,7 +2405,7 @@ void LT_Load_Image(char *file,char* dat_string){
 			offset -= 640;
 			i++;
 			if (i < 4) VGA_index += 8192-160;
-			else {VGA_index += 8192;VGA_index &= (8192*4)-1; i = 0;}
+			else {VGA_index += 8192;VGA_index &= (8192<<2)-1; i = 0;}
 		}
 	}	
 	if (LT_VIDEO_MODE == 2){
