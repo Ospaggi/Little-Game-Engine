@@ -293,60 +293,66 @@ void LT_ClearScreen(){
 
 
 // Uncompress BMP image (either RLE8 or RLE4)
-// FROM GIMP: removed most multiplications, all divisions, and delta
-void decompress_RLE_BMP(word fp, unsigned char bpp, int width, int height,byte palette){
-	int xpos = 0; int ypos = 0;
-	int i,j,n;
-	int total_bytes_read = 0;
-	byte i_max = 0;
-	byte _bpp = 0;
-	byte count_val[2] = {0,0};//Get mode Get data
-	int y_offset = 0;
-	if (bpp == 8) _bpp = 3;
-	if (bpp == 4) _bpp = 2;
-    while (ypos < height && xpos <= width){
-		LT_fread(fp,2,count_val);
-		// Count + Color - record 
-		if (count_val[0] != 0){                 
-            // encoded mode run - count == run_length; val == pixel data
-			if (count_val[1]) (count_val[1]+=palette);
-            for (j = 0; ( j < count_val[0]) && (xpos < width);){
-				for (i = 1;((i <= (8 >> _bpp)) && (xpos < width) && ( j < count_val[0]));i++, xpos++, j++){
-                    LT_tile_tempdata[y_offset + xpos] = (count_val[1] & (((1<<bpp)-1) << (8 - (i << _bpp)))) >> (8 - (i << _bpp));
-				}
-			}
+// Optimized for 8086: removed multiplications/divisions, kept shifts
+void decompress_RLE_BMP(word fp, unsigned char bpp, int width, int height, byte palette) {
+    int xpos = 0, ypos = 0;
+    int i, j, n;
+    int total_bytes_read = 0;
+    byte i_max = 0;
+    byte _bpp = 0;
+    byte count_val[2] = {0,0};
+    int y_offset = 0;
+
+    if (bpp == 8) _bpp = 3;
+    if (bpp == 4) _bpp = 2;
+
+    while (ypos < height && xpos <= width) {
+        LT_fread(fp, 2, count_val);
+
+        // Encoded run
+        if (count_val[0] != 0) {
+            if (count_val[1]) (count_val[1] += palette);
+            for (j = 0; (j < count_val[0]) && (xpos < width); ) {
+                for (i = 1; (i <= (8 >> _bpp)) && (xpos < width) && (j < count_val[0]); i++, xpos++, j++) {
+                    // keep shift, avoid mul
+                    LT_tile_tempdata[y_offset + xpos] =
+                        (count_val[1] & (((1 << bpp) - 1) << (8 - (i << _bpp)))) >> (8 - (i << _bpp));
+                }
+            }
         }
-		// uncompressed record
-		if ((count_val[0] == 0) && (count_val[1] > 2)){ 
-			n = count_val[1];
-			total_bytes_read = 0;
-			for (j = 0; j < n; j += (8 >> _bpp)){
-                // read the next byte in the record 
-				byte c; byte d = 0;
-				LT_fread(fp,1,&c);
-				if (c) d = palette; else d = 0;
-				c+=d;
+
+        // Absolute run
+        if ((count_val[0] == 0) && (count_val[1] > 2)) {
+            n = count_val[1];
+            total_bytes_read = 0;
+            for (j = 0; j < n; j += (8 >> _bpp)) {
+                byte c, d = 0;
+                LT_fread(fp, 1, &c);
+                if (c) d = palette; else d = 0;
+                c += d;
                 total_bytes_read++;
-				// read all pixels from that byte
-				i_max = 8 >> _bpp;
-				if (n - j < i_max) i_max = n - j;
+
+                i_max = 8 >> _bpp;
+                if (n - j < i_max) i_max = n - j;
+
                 i = 1;
-				while ((i <= i_max) && (xpos < width)){
-                    LT_tile_tempdata[y_offset + xpos] = (c >> (8-(i<<_bpp))) & ((1<<bpp)-1);
+                while ((i <= i_max) && (xpos < width)) {
+                    LT_tile_tempdata[y_offset + xpos] =
+                        (c >> (8 - (i << _bpp))) & ((1 << bpp) - 1);
                     i++; xpos++;
                 }
             }
-			// absolute mode runs are padded to 16-bit alignment
-            if (total_bytes_read & 1) LT_fseek(fp,1,1);
+            if (total_bytes_read & 1) LT_fseek(fp, 1, 1); // padding
         }
-		// Line end
-		if ((count_val[0] == 0) && (count_val[1] == 0)){ypos++;xpos = 0;y_offset += width;}
-		// Bitmap end
-		if ((count_val[0] == 0) && (count_val[1] == 1)) break;
-		// Deltarecord. I did not find any BMP using this
-        //if ((count == 0) && (val == 2)){
-		//	count = fgetc(fp);val = fgetc(fp);xpos += count; ypos += val;
-        //}
+
+        // End of line
+        if ((count_val[0] == 0) && (count_val[1] == 0)) {
+            ypos++;
+            xpos = 0;
+            y_offset += width; // avoid ypos*width
+        }
+        // End of bitmap
+        if ((count_val[0] == 0) && (count_val[1] == 1)) break;
     }
 }
 
