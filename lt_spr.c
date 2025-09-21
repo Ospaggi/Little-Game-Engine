@@ -162,15 +162,17 @@ int LT_Scroll_Camera_speed[] = {
 	2,2,2,2,2,2,2,2,
 };
 
-int _abs(int x) {
-    int result;
-    asm mov ax, x
-    asm cwd            // DX is sign of AX
-    asm xor ax, dx
-    asm sub ax, dx
-    asm mov result, ax
-    return result;
-}
+//int _abs(int x) {
+//    int result;
+//    asm mov ax, x
+//    asm cwd            // DX is sign of AX
+//    asm xor ax, dx
+//    asm sub ax, dx
+//    asm mov result, ax
+//    return result;
+//}
+
+#define _abs(x)  (( (x) < 0 ) ? -(x) : (x))
 
 void _memcpy(void *dest, void *src, word number);
 
@@ -844,24 +846,25 @@ void LT_Reset_Sprite_Stack(){
 
 void LT_Set_Sprite_Animation(int sprite_number, byte anim){
 	SPRITE *s = &sprite[sprite_number];
-	if (s->baseframe != anim<<3){//If changed animation
-		s->baseframe = anim<<3;
-		s->anim_counter = anim<<3;
-		s->animate = 1;
-		if (s->baseframe > 64) s->baseframe = 0;
+	unsigned char new_frame = (anim & 7) << 3; // force wrap at 64
+	if (s->baseframe != new_frame){
+		s->baseframe    = new_frame;
+		s->anim_counter = new_frame;
+		s->animate      = 1;
 	}
 }
 
 void LT_Set_Sprite_Animation_Speed(int sprite_number, byte speed){
 	SPRITE *s = &sprite[sprite_number];
-	if(LT_VIDEO_MODE == 2) speed = speed>>1;//If CGA, sprites are updates at 30 fps, not 60
+	if (LT_VIDEO_MODE == 2) speed >>= 1;//If CGA, sprites are updates at 30 fps, not 60
 	s->speed = speed;
 }
 
 void LT_Sprite_Stop_Animation(int sprite_number){
-	if (sprite[sprite_number].animate == 1){
-		sprite[sprite_number].animate = 0; 
-		sprite[sprite_number].baseframe = 65;
+	SPRITE *s = &sprite[sprite_number];
+	if (s->animate){
+		s->animate   = 0;
+		s->baseframe = 65; // "stopped" marker
 	}
 }
 
