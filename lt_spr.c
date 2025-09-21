@@ -174,39 +174,55 @@ int _abs(int x) {
 
 void _memcpy(void *dest, void *src, word number);
 
-void LT_scroll_follow(int sprite_number){
-	SPRITE *s = &sprite[sprite_number];
-	int x;
-	int x1;
-	int y = (s->pos_y-SCR_Y)-120;
-	int y1 = _abs(y);
-	int speed_x = 0;
-	int speed_y = 0;
-	LT_SPRITE_PLAYER = sprite_number;
-	if ((s->state == 3) && (x_adjust != 190))x_adjust++; //FACING LEFT
-	if ((s->state == 4) && (x_adjust != 130))x_adjust--; //FACING RIGHT
+void LT_scroll_follow(int sprite_number) {
+    SPRITE *s = &sprite[sprite_number];
+    int x, y, x1, y1;
+    int speed_x, speed_y;
+    int idx_x, idx_y;
 
-	//Show more screen in the direction the sprite is facing
-	x = (s->pos_x-SCR_X) - x_adjust;
-	x1 = _abs(x);
+    LT_SPRITE_PLAYER = sprite_number;
 
-	if ((SCR_X > -1) && ((SCR_X+319)<LT_wmap) && (SCR_Y > -1) && ((SCR_Y+200)<(LT_hmap))){
-		if (LT_Scroll_Camera_float == 8) LT_Scroll_Camera_float = 0;
-		speed_x = LT_Scroll_Camera_speed[(LT_Scroll_Camera_array[x1]<<3)+LT_Scroll_Camera_float];
-		speed_y = LT_Scroll_Camera_speed[(LT_Scroll_Camera_array[y1]<<3)+LT_Scroll_Camera_float];
-		if (x < 0) SCR_X-=speed_x;
-		if (x > 0) SCR_X+=speed_x;
-		if (LT_MODE == 1 && LT_VIDEO_MODE > 1) {if (s->ground && y < 0) SCR_Y-=speed_y;}
-		else if (y < 0) SCR_Y-=speed_y;
-		if (y > 0) SCR_Y+=speed_y;
-		
-		LT_Scroll_Camera_float++;
-	}
+    // Facing direction adjustment
+    if (s->state == 3 && x_adjust < 190) x_adjust++;
+    else if (s->state == 4 && x_adjust > 130) x_adjust--;
 
-	if (SCR_X < 0) SCR_X = 0; 
-	if ((SCR_X+320) > LT_wmap) SCR_X = LT_wmap-320;
-	if (SCR_Y < 0) SCR_Y = 0; 
-	if ((SCR_Y+201) > (LT_hmap)) SCR_Y = LT_hmap-201;
+    // Relative position
+    y  = (s->pos_y - SCR_Y) - 120;
+    y1 = _abs(y);
+    x  = (s->pos_x - SCR_X) - x_adjust;
+    x1 = _abs(x);
+
+    // Only scroll if camera inside map
+    if (SCR_X >= 0 && (SCR_X + 319) < LT_wmap &&
+        SCR_Y >= 0 && (SCR_Y + 200) < LT_hmap)
+    {
+        if (LT_Scroll_Camera_float == 8) LT_Scroll_Camera_float = 0;
+
+        idx_x = (LT_Scroll_Camera_array[x1] << 3) + LT_Scroll_Camera_float;
+        idx_y = (LT_Scroll_Camera_array[y1] << 3) + LT_Scroll_Camera_float;
+
+        speed_x = LT_Scroll_Camera_speed[idx_x];
+        speed_y = LT_Scroll_Camera_speed[idx_y];
+
+        if (x < 0) SCR_X -= speed_x;
+        else if (x > 0) SCR_X += speed_x;
+
+        if (y < 0) {
+            if (!(LT_MODE == 1 && LT_VIDEO_MODE > 1) || s->ground)
+                SCR_Y -= speed_y;
+        } else if (y > 0) {
+            SCR_Y += speed_y;
+        }
+
+        LT_Scroll_Camera_float++; // increment here, after using it
+    }
+
+    // Clamp to map
+    if (SCR_X < 0) SCR_X = 0;
+    else if ((SCR_X + 320) > LT_wmap) SCR_X = LT_wmap - 320;
+
+    if (SCR_Y < 0) SCR_Y = 0;
+    else if ((SCR_Y + 201) > LT_hmap) SCR_Y = LT_hmap - 201;
 }
 
 void LT_Load_BMP(char *file, char *dat_string, int mode, int sprite_number);
