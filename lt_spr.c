@@ -162,17 +162,15 @@ int LT_Scroll_Camera_speed[] = {
 	2,2,2,2,2,2,2,2,
 };
 
-//int _abs(int x) {
-//    int result;
-//    asm mov ax, x
-//    asm cwd            // DX is sign of AX
-//    asm xor ax, dx
-//    asm sub ax, dx
-//    asm mov result, ax
-//    return result;
-//}
-
-#define _abs(x)  (( (x) < 0 ) ? -(x) : (x))
+int _abs(int x) {
+    int result;
+    asm mov ax, x
+    asm cwd            // DX is sign of AX
+    asm xor ax, dx
+    asm sub ax, dx
+    asm mov result, ax
+    return result;
+}
 
 void _memcpy(void *dest, void *src, word number);
 
