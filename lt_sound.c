@@ -74,7 +74,8 @@ wait1:
     asm dec dx               ; //Back to 0x388 (address port)
 
     asm inc bl               ; //Next register
-    asm loop clear_loop      ; //Repeat until CX = 0
+	asm dec cx               ; //Decrement counter
+    asm jnz clear_loop       ; //Repeat until CX = 0
 
 }
 
@@ -392,12 +393,20 @@ void Play_Music_VGM(){
 			asm mov LT_imfwait,0
 			asm jmp _NEXT
 		_OPL2:
-		asm sub bl,0x5A;
-		asm cmp bl,0x02; asm jg _DELAY;	// 5A YM3812, 5B YM3526, 5C Y8950
-			asm mov ax,es:[si]; asm add si,2;
-			asm mov dx, ADLIB_PORT; asm out dx,al;
-			asm mov cx,52; asm rep nop;//wait at least 3.3 microseconds
-			asm inc dx; asm xchg ah,al; asm out dx, al;
+        asm sub bl,0x5A;
+        asm cmp bl,0x02; asm jg _DELAY;    // 5A YM3812, 5B YM3526, 5C Y8950
+            asm mov ax,es:[si]; asm add si,2;
+            asm mov dx, ADLIB_PORT; asm out dx,al;
+			
+            asm mov cx,52 // wait at least 3.3 microseconds
+			_OPL2_delay: 
+				asm dec cx
+				asm jnz _OPL2_delay
+
+			asm inc dx
+			asm xchg ah,al
+			asm out dx, al
+
 			asm mov LT_imfwait,0
 			asm jmp _NEXT
 		_DELAY:
