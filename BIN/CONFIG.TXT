@@ -1,8 +1,8 @@
 #SETUP---------
-VIDEO=3        
-SCROLL=0       
-MUSIC=0        
-SFX=0          
+VIDEO=1        
+SCROLL=1       
+MUSIC=1        
+SFX=1          
 JOYX=AÑB      
 JOYY=AÑB0     
 LANG=0         

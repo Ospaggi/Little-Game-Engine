@@ -316,7 +316,7 @@ void Display_Intro(){
 				else change = 0;
 				if (transition == -8){
 					if (LT_SFX_MODE == 0) LT_Play_PC_Speaker_SFX(Speaker_Menu);
-					if (LT_SFX_MODE == 1) LT_Play_AdLib_SFX(Adlib_Select_Sound,8,2,2);
+					if (LT_SFX_MODE == 1) LT_Play_AdLib_SFX(Adlib_Select_Sound,5,2,2);
 					menu_option --; 
 					game-=2;
 					change = 3;
@@ -328,7 +328,7 @@ void Display_Intro(){
 				else change = 0;
 				if (transition == 8){
 					if (LT_SFX_MODE == 0) LT_Play_PC_Speaker_SFX(Speaker_Menu);
-					if (LT_SFX_MODE == 1) LT_Play_AdLib_SFX(Adlib_Select_Sound,8,2,2);
+					if (LT_SFX_MODE == 1) LT_Play_AdLib_SFX(Adlib_Select_Sound,5,2,2);
 					menu_option ++; 
 					game+=2;
 					change = 3;
@@ -453,7 +453,8 @@ void Run_TopDown(){
 				Scene = 1;
 				game = 2;
 				LT_sleep(1);
-				LT_Fade_out(); 
+				LT_Fade_out();
+				LT_Stop_Music();
 			}
 		}
 		
@@ -544,7 +545,7 @@ void Run_Platform(){
 		}
 		if (Level_cards != last_cards){
 			if (LT_SFX_MODE == 0)LT_Play_PC_Speaker_SFX(Speaker_Get_Item);
-			if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Speaker_Get_Item_Adlib,8,4,0);
+			if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Speaker_Get_Item_Adlib,5,4,0);
 		}
 		last_cards = Level_cards;
 		
@@ -558,7 +559,7 @@ void Run_Platform(){
 			if (Level_cards < 8) LT_Draw_Text_Box(4,10,17,2,3,LT_ACTION,0,"YOU NEED 8 CARDS TO OPEN DOOR.   @");
 			else { //Open door
 				if (LT_SFX_MODE == 0)LT_Play_PC_Speaker_SFX(Speaker_Get_Item);
-				if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Adlib_Metal,8,4,0);
+				if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Adlib_Metal,5,4,0);
 				Sprite_Bounce_Left(8);
 				//and update/open Door tile
 				LT_Edit_MapTile(sprite[8].tile_x+1,sprite[8].tile_y,86,0);
@@ -584,7 +585,7 @@ void Run_Platform(){
 		//if water or enemy, reset level
 		if (sprite[8].pos_y > (18*16)){
 			if (LT_SFX_MODE == 0){LT_Play_PC_Speaker_SFX(Speaker_Crash);}
-			if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Speaker_Get_Item_Adlib,8,4,0);
+			if (LT_SFX_MODE == 1)LT_Play_AdLib_SFX(Speaker_Get_Item_Adlib,5,4,0);
 			Scene = 1;
 			game = 4;
 			LT_sleep(1);
