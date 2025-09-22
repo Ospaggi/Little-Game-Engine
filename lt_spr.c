@@ -183,13 +183,15 @@ void LT_scroll_follow(int sprite_number) {
     LT_SPRITE_PLAYER = sprite_number;
 
     // Facing direction adjustment
-    if (s->state == 3 && x_adjust < 190) x_adjust++;
-    else if (s->state == 4 && x_adjust > 130) x_adjust--;
+    //if (s->state == 3 && x_adjust < 190) x_adjust++;
+    //else if (s->state == 4 && x_adjust > 130) x_adjust--;
 
     // Relative position
-    y  = (s->pos_y - SCR_Y) - 120;
+	// + 8 for character middle, so it can remove if
+	// someone uses different size of player sprite
+    y  = (s->pos_y - SCR_Y) - 100 +8;
     y1 = _abs(y);
-    x  = (s->pos_x - SCR_X) - x_adjust;
+    x  = (s->pos_x - SCR_X) - x_adjust +8;
     x1 = _abs(x);
 
     // Only scroll if camera inside map
