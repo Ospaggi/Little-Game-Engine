@@ -20,13 +20,9 @@ This was created for the absolute low end computer, and the engine runs at 60 fp
 - 32x32 sprites: these are only fast in EGA mode, but they lack a lot of details in this mode.
 
 
-NEW:
+NEW :
 
-- Tandy mode working, CGA mode working.
-- Replaced all turbo C functions with DOS/BIOS functions, this makes the code very small,
-and more portable for other DOS compillers.
-- Added more compatible scrolling function.
-- joystick support
+- Optimized Codes
 - VGM loop support
 
 The predefined controls are:
@@ -120,9 +116,6 @@ This is a 16-bit MS-DOS program, it will only work on pure MS-DOS and FreeDos, (
 You have to compile using the LARGE memory model. 
 
 Please copy this source code, change it, do whatever you want. That's the point of github. Isn't it?
-
-Thanks to everyone who helped and released code (music player, image loader).
-Thanks to "jojo" for sending me a real 286 :).
 
 NOTES
 -----
