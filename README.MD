@@ -8,6 +8,7 @@ It's 1989, or 1991... (or maybe 1993), and many people can finally experience x8
 
 OptiDOS Game Engine is a very simple "game engine" forked from Little Game Engine.
 This forked Engine is more optimized from Little Game Engine.
+Also I remain function names for compatibility with Little Game Engine. so if you using Little Game Engine, I recommend try this.
 
 The engine is using the common 320x200 mode, but it has been tweaked to run at 60 Hz on VGA.
 
@@ -26,7 +27,7 @@ NEW:
 and more portable for other DOS compillers.
 - Added more compatible scrolling function.
 - joystick support
-
+- VGM loop support
 
 The predefined controls are:
 - Move player/menus = UP DOWN LEFT RIGHT arrows or joystick.
