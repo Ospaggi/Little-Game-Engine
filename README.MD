@@ -4,8 +4,6 @@ OptiDOS Game Engine optimized for CGA/TANDY/EGA/VGA and very slow computers (808
 
 <img src="play_011.png">
 
-It's 1989, or 1991... (or maybe 1993), and many people can finally experience x86 Personal Computers at a more or less reasonable price... But only second-hand ones, or really low end systems (8088/86, and 286) with (probably) a CGA card, or with some luck an EGA/slow VGA. You also don't have any sound card, (unless the PC is a tandy) or you just got a crappy adlib... This is what happened to me, and many others around me, so this engine is made to work well on those old slow x86 PC's. You won't find mind blowing or undiscovered magical features of old hardware, the only special thing here, is it works well on these first obsolete computers.
-
 OptiDOS Game Engine is a very simple "game engine" forked from Little Game Engine.
 This forked Engine is more optimized from Little Game Engine.
 Also I remain function names for compatibility with Little Game Engine. so if you using Little Game Engine, I recommend try this.
