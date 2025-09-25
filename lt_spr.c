@@ -187,11 +187,10 @@ void LT_scroll_follow(int sprite_number) {
     //else if (s->state == 4 && x_adjust > 130) x_adjust--;
 
     // Relative position
-	// + 8 for character middle, so it can remove if
-	// someone uses different size of player sprite
-    y  = (s->pos_y - SCR_Y) - 100 +8;
+	// it always makes camera's position character's center.
+    y  = (s->pos_y - SCR_Y) - 100 + (s->height >> 1);
     y1 = _abs(y);
-    x  = (s->pos_x - SCR_X) - x_adjust +8;
+    x  = (s->pos_x - SCR_X) - x_adjust + (s->width >> 1);
     x1 = _abs(x);
 
     // Only scroll if camera inside map
